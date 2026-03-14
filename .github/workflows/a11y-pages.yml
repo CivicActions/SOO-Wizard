@@ -1,0 +1,43 @@
+name: Accessibility Scan – GitHub Pages
+
+# Scans the live GitHub Pages deployment using github/accessibility-scanner.
+# Findings are filed as GitHub Issues and can be assigned to GitHub Copilot
+# for AI-powered fix suggestions.
+#
+# Prerequisites (one-time setup by a repo admin):
+#   1. Create a fine-grained PAT with these repository permissions:
+#        actions: write, contents: write, issues: write, pull-requests: write
+#      (metadata: read is granted automatically)
+#   2. Store the token as a repository secret named GH_TOKEN.
+#
+# Reference: https://github.com/github/accessibility-scanner
+
+on:
+  # Fires after GitHub Pages finishes building (avoids scanning stale content)
+  page_build:
+  schedule:
+    # First day of every month at 09:00 UTC
+    - cron: "0 9 1 * *"
+  workflow_dispatch:
+
+# The action authenticates with its own PAT (GH_TOKEN secret).
+# The workflow's built-in GITHUB_TOKEN needs no permissions here.
+permissions: {}
+
+jobs:
+  a11y-pages:
+    name: Scan GitHub Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Run accessibility scanner
+        uses: github/accessibility-scanner@v2
+        with:
+          urls: |
+            https://civicactions.github.io/SOO-Wizard/
+          repository: CivicActions/SOO-Wizard
+          token: ${{ secrets.GH_TOKEN }}
+          cache_key: civicactions-soo-wizard-pages
+          skip_copilot_assignment: false
+          include_screenshots: true
