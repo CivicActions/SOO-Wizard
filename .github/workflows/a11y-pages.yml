@@ -33,9 +33,10 @@ jobs:
 
     steps:
       - name: Check scanner token configuration
-        if: ${{ !secrets.GH_TOKEN }}
+        if: ${{ secrets.GH_TOKEN == '' }}
         run: |
-          echo "::warning title=Accessibility scan skipped::Repository secret GH_TOKEN is not configured. Add a fine-grained PAT with actions:write, contents:write, issues:write, and pull-requests:write to enable github/accessibility-scanner."
+          echo "::warning title=Accessibility scan skipped::Repository secret GH_TOKEN is not configured."
+          echo "Add a fine-grained PAT with actions:write, contents:write, issues:write, and pull-requests:write to enable github/accessibility-scanner."
 
       - name: Run accessibility scanner
         if: ${{ secrets.GH_TOKEN != '' }}
