@@ -21,7 +21,8 @@ on:
   workflow_dispatch:
 
 # The action authenticates with its own PAT (GH_TOKEN secret).
-# The workflow's built-in GITHUB_TOKEN needs no permissions here.
+# If that secret is not configured, skip the scan with guidance instead of
+# failing the scheduled/page_build workflow.
 permissions: {}
 
 jobs:
@@ -29,15 +30,24 @@ jobs:
     name: Scan GitHub Pages
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      SCANNER_TOKEN: ${{ secrets.GH_TOKEN }}
 
     steps:
+      - name: Check scanner token configuration
+        if: env.SCANNER_TOKEN == ''
+        run: |
+          echo "::warning title=Accessibility scan skipped::Repository secret GH_TOKEN is not configured."
+          echo "Add a fine-grained PAT with actions:write, contents:write, issues:write, and pull-requests:write to enable github/accessibility-scanner."
+
       - name: Run accessibility scanner
+        if: env.SCANNER_TOKEN != ''
         uses: github/accessibility-scanner@v2
         with:
           urls: |
             https://civicactions.github.io/SOO-Wizard/
           repository: CivicActions/SOO-Wizard
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ env.SCANNER_TOKEN }}
           cache_key: civicactions-soo-wizard-pages
           skip_copilot_assignment: false
           include_screenshots: true
