@@ -30,22 +30,24 @@ jobs:
     name: Scan GitHub Pages
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      SCANNER_TOKEN: ${{ secrets.GH_TOKEN }}
 
     steps:
       - name: Check scanner token configuration
-        if: ${{ secrets.GH_TOKEN == '' }}
+        if: ${{ env.SCANNER_TOKEN == '' }}
         run: |
           echo "::warning title=Accessibility scan skipped::Repository secret GH_TOKEN is not configured."
           echo "Add a fine-grained PAT with actions:write, contents:write, issues:write, and pull-requests:write to enable github/accessibility-scanner."
 
       - name: Run accessibility scanner
-        if: ${{ secrets.GH_TOKEN != '' }}
+        if: ${{ env.SCANNER_TOKEN != '' }}
         uses: github/accessibility-scanner@v2
         with:
           urls: |
             https://civicactions.github.io/SOO-Wizard/
           repository: CivicActions/SOO-Wizard
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ env.SCANNER_TOKEN }}
           cache_key: civicactions-soo-wizard-pages
           skip_copilot_assignment: false
           include_screenshots: true
